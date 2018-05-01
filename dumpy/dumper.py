@@ -3,7 +3,6 @@ import ConfigParser
 import logging
 import optparse
 import os
-import sys
 
 from dumpy import base
 

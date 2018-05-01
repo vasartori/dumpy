@@ -26,6 +26,8 @@ class S3Copy(dumpy.base.PostProcessBase):
         self.secret_key = self._get_option_value(self.config, 'S3Copy options', 'secret_key')
         self.bucket = self._get_option_value(self.config, 'S3Copy options', 'bucket')
         self.prefix = self._get_option_value(self.config, 'S3Copy options', 'prefix')
+        self.db_name_dir = bool(self._get_option_value(self.config, 'S3Copy '
+                                                                     'options', 'db_name_dir'))
         # Make sure prefix ends with a single forward slash
         if not self.prefix.endswith('/'):
             self.prefix += '/'
@@ -39,11 +41,18 @@ class S3Copy(dumpy.base.PostProcessBase):
         conn = S3Connection(self.access_key, self.secret_key)
         bucket = conn.create_bucket(self.bucket)
         k = Key(bucket)
-        if self.prefix:
+        if self.prefix and self.db_name_dir == False:
             keyname = '%s%s' % (
                 self.prefix,
                 os.path.basename(file.name)
             )
+        elif self.prefix and self.db_name_dir:
+            keyname = '%s%s' % (
+                self.prefix,
+                '/'.join([self.db, os.path.basename(file.name)])
+            )
+        elif self.prefix == False and self.db_name_dir:
+            keyname = '/'.join([self.db, os.path.basename(file.name)])
         else:
             keyname = os.path.basename(file.name)
         k.key = keyname

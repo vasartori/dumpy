@@ -43,19 +43,27 @@ The following is an idea of what the configuration file, located at
 	
 	[pg_dump options]
 	path = /opt/local/lib/postgresql83/bin/pg_dump
-	
+
 	[TimestampRename options]
 	format = %%Y%%m%%d
-	
+
 	[Bzip options]
 	path = /usr/bin/bzip2
-	
+
 	[S3Copy options]
 	access_key = access_key
 	secret_key = secret_key
 	bucket = bucket
 	prefix = path/to/directory
-	
+	db_name_dir = True or False
+
+	[S3Rotating options]
+	access_key = access_key
+	secret_key = secret_key
+	bucket = bucket
+	prefix = path/to/directory
+	number = 5
+
 	[FileSystemCopy options]
 	directory = /path/to/directory/
 	
@@ -106,3 +114,11 @@ Setting up a cron job
 =====================
 
 TODO
+
+TODO LIST
+=========
+- Unify S3 configs
+- Update boto to version 3
+- Update to python3
+- Docker container
+- Path to config file in options. Fallback to `~/.dumpy.cfg`

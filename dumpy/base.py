@@ -130,6 +130,7 @@ class PostProcess(PostProcessBase):
             'PrependDatabaseName': 'dumpy.postprocessor.dbname.PrependDatabaseName',
             'RotateFiles': 'dumpy.postprocessor.rotating.RotateFiles',
             'S3Copy': 'dumpy.postprocessor.s3copy.S3Copy',
+            'S3Rotating': 'dumpy.postprocessor.s3rotating.S3Rotating',
             'TimestampRename': 'dumpy.postprocessor.timestamp.TimestampRename',
         }
 
