@@ -28,7 +28,7 @@ The following is an idea of what the configuration file, located at
 	name = dbname1
 	user = db1
 	password = db1
-	postprocessing = TimestampRename, PrependDatabaseName, Bzip, FileSystemCopy, S3Copy
+	postprocessing = TimestampRename, PrependDatabaseName, Bzip, FileSystemCopy, S3Copy, S3Rotating, Monitoring
 	
 	[database db2]
 	type = postgresql
@@ -70,6 +70,11 @@ The following is an idea of what the configuration file, located at
 	[RotateFiles options]
 	directory = /path/to/directory/
 	number = 5
+
+	[prometheus]
+	host = <prometheus push gateway host with port. Eg: localhost:9091>
+	job_name = <value for label job>
+
 
 
 Status
