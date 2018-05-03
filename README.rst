@@ -118,4 +118,4 @@ TODO LIST
 - [ ] Update boto to version 3
 - [ ] Update to python3
 - [ ] Path to config file in options. Fallback to `~/.dumpy.cfg`
-- [ ] Add a way to monitoring the dump
+- [x] Add a way to monitoring the dump

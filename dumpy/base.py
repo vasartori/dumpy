@@ -3,8 +3,12 @@ import os
 
 from dumpy.importlib import import_module
 
+PROMETHEUS_MONIT_STATUS = dict()
+
+
 class ProcessorException(Exception):
     pass
+
 
 class DumpyBase(object):
     """
@@ -12,6 +16,7 @@ class DumpyBase(object):
 
     Provides a few utility methods to subclasses.
     """
+
     def _get_option_value(self, config, section, option, type=None):
         """
         Tries to get the section and option from config, returning None
@@ -66,6 +71,7 @@ class DumpyBase(object):
         self.config = ConfigParser.SafeConfigParser()
         self.config.read(os.path.expanduser('~/.dumpy.cfg'))
 
+
 class BackupBase(DumpyBase):
     """
     Base class for database backups.
@@ -73,11 +79,13 @@ class BackupBase(DumpyBase):
     Any subclass of BackupBase needs to implement the backup() method and
     return a file-like object.
     """
+
     def __init__(self, db):
         self.db = db
 
     def backup(self):
         raise NotImplementedError
+
 
 class PostProcessBase(DumpyBase):
     """
@@ -90,13 +98,16 @@ class PostProcessBase(DumpyBase):
     def process(self, file):
         raise NotImplementedError
 
+
 class DatabaseBackup(BackupBase):
     """
     This classes loads the config's type and passes of backup to the type's
     class.  (e.g. type == 'mysql' calls MysqlBackup().backup().)
     """
+
     def __init__(self, database):
         self.database = database
+        PROMETHEUS_MONIT_STATUS[database]=list()
 
     def parse_config(self):
         super(DatabaseBackup, self).parse_config()
@@ -117,11 +128,13 @@ class DatabaseBackup(BackupBase):
             from dumpy.database import postgresql
             return postgresql.PostgresqlBackup(self.database).backup()
 
+
 class PostProcess(PostProcessBase):
     """
     This classes loads the specified database `postprocessing` config option
     and passes off handling to each post processor.
     """
+
     def __init__(self, db):
         self.db = db
         self.builtin_processors = {
@@ -132,6 +145,7 @@ class PostProcess(PostProcessBase):
             'S3Copy': 'dumpy.postprocessor.s3copy.S3Copy',
             'S3Rotating': 'dumpy.postprocessor.s3rotating.S3Rotating',
             'TimestampRename': 'dumpy.postprocessor.timestamp.TimestampRename',
+            'Monitoring': 'dumpy.postprocessor.prometheus.Monitoring',
         }
 
     def parse_config(self):
@@ -153,17 +167,19 @@ class PostProcess(PostProcessBase):
                     dot = processor_path.rindex('.')
                 except ValueError:
                     raise ProcessorException, '%s isn\'t a processor module' % processor_path
-                pp_module, pp_classname = processor_path[:dot], processor_path[dot+1:]
+                pp_module, pp_classname = processor_path[:dot], processor_path[
+                                                                dot + 1:]
                 try:
                     mod = import_module(pp_module)
                 except ImportError, e:
-                    raise ProcessorException, 'Error importing processor %s: "%s"' % (pp_module, e)
+                    raise ProcessorException, 'Error importing processor %s: "%s"' % (
+                    pp_module, e)
                 try:
                     pp_class = getattr(mod, pp_classname)
                 except AttributeError:
-                    raise ProcessorException, 'Processor module "%s" does not define a "%s" class' % (pp_module, pp_classname)
+                    raise ProcessorException, 'Processor module "%s" does not define a "%s" class' % (
+                    pp_module, pp_classname)
 
                 processor = pp_class(self.db)
 
                 file = processor.process(file)
-

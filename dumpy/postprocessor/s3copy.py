@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 
 try:
     import boto
@@ -38,6 +39,7 @@ class S3Copy(dumpy.base.PostProcessBase):
 
         self.parse_config()
 
+        start = time.time()
         conn = S3Connection(self.access_key, self.secret_key)
         bucket = conn.create_bucket(self.bucket)
         k = Key(bucket)
@@ -55,10 +57,23 @@ class S3Copy(dumpy.base.PostProcessBase):
             keyname = '/'.join([self.db, os.path.basename(file.name)])
         else:
             keyname = os.path.basename(file.name)
-        k.key = keyname
-        k.set_contents_from_file(file)
+        try:
+            k.key = keyname
+            k.set_contents_from_file(file)
+            end = time.time() - start
+            works = True
+            logger.info('%s - %s - Copying to S3 with key name: %s' % (
+            self.db, self.__class__.__name__, keyname))
+        except BaseException:
+            logger.error('%s - %s - Copying to S3 with key name: %s' % (
+            self.db, self.__class__.__name__, keyname))
+            works = False
 
-        logger.info('%s - %s - Copying to S3 with key name: %s' % (self.db, self.__class__.__name__, keyname))
-
+        prom_metrics = {
+            "task": self.__class__.__name__,
+            "spent_time": end,
+            "works": works
+        }
+        dumpy.base.PROMETHEUS_MONIT_STATUS[self.db].append(prom_metrics)
         return file
 

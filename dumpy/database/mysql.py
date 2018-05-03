@@ -1,13 +1,16 @@
 import logging
 import os
 import tempfile
+import time
 
 import dumpy
 
 logger = logging.getLogger("dumper")
 
+
 class MySQLDumpError(Exception):
     pass
+
 
 class MysqlBackup(dumpy.base.BackupBase):
 
@@ -21,8 +24,10 @@ class MysqlBackup(dumpy.base.BackupBase):
         self.host = self._get_option_value(self.config, section, 'host')
         self.port = self._get_option_value(self.config, section, 'port', 'int')
 
-        self.binary = self._get_option_value(self.config, 'mysqldump options', 'path')
-        self.flags = self._get_option_value(self.config, 'mysqldump options', 'flags')
+        self.binary = self._get_option_value(self.config, 'mysqldump options',
+                                             'path')
+        self.flags = self._get_option_value(self.config, 'mysqldump options',
+                                            'flags')
 
     def get_flags(self):
         flags = '%s' % (self.flags)
@@ -39,7 +44,7 @@ class MysqlBackup(dumpy.base.BackupBase):
     def backup(self):
         self.parse_config()
         tmp_file = tempfile.NamedTemporaryFile()
-#        try:
+
         cmd = '%(binary)s %(flags)s %(database)s > %(file)s' % ({
             'binary': self.binary,
             'flags': self.get_flags(),
@@ -47,7 +52,23 @@ class MysqlBackup(dumpy.base.BackupBase):
             'file': tmp_file.name,
         })
         logger.info('%s - Command: %s' % (self.db, cmd))
-        os.system(cmd)
+        start = time.time()
+        retval = os.system(cmd)
+        end = time.time() - start
 
+        if retval == 0:
+            prom_metrics = {
+                "task": self.__class__.__name__,
+                "spent_time": end,
+                "works": True
+            }
+        else:
+            prom_metrics = {
+                "task": self.__class__.__name__,
+                "spent_time": end,
+                "works": False
+            }
+            logger.warning("The return value of command: %s is not zero. The "
+                           "returned value is: %s" % (cmd, str(retval)))
+        dumpy.base.PROMETHEUS_MONIT_STATUS[self.db].append(prom_metrics)
         return tmp_file
-

@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 
 import dumpy
 
@@ -22,8 +23,26 @@ class Bzip(dumpy.base.PostProcessBase):
 
         cmd = "%(path)s -f '%(file)s'" % ({'path': self.path, 'file': file.name})
         logger.info('%s - %s - Command: %s' % (self.db, self.__class__.__name__, cmd))
-        os.system(cmd)
+        start = time.time()
+        retval = os.system(cmd)
+        end = time.time() - start
+
         new_file = open('%s.bz2' % (file.name))
         file.close()
-        return new_file
 
+        if retval == 0:
+            prom_metrics = {
+                "task": self.__class__.__name__,
+                "spent_time": end,
+                "works": True
+            }
+        else:
+            prom_metrics = {
+                "task": self.__class__.__name__,
+                "spent_time": end,
+                "works": False
+            }
+            logger.warning("The return value of command: %s is not zero. The "
+                           "returned value is: %s" % (cmd, str(retval)))
+        dumpy.base.PROMETHEUS_MONIT_STATUS[self.db].append(prom_metrics)
+        return new_file

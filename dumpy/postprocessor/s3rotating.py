@@ -1,4 +1,5 @@
 import logging
+import time
 
 try:
     import boto
@@ -46,20 +47,33 @@ class S3Rotating(dumpy.base.PostProcessBase):
                 "You must have boto installed before using S3 support.")
 
         self.parse_config()
-
+        start = time.time()
         conn = S3Connection(self.access_key, self.secret_key)
         bucket = conn.get_bucket(self.bucket)
         bucket_data = bucket.get_all_keys()
+
         if len(bucket_data) <= self.number:
             logger.info("The amount of backups for db %s was not reached to "
                         "be deleted." % (self.db))
+            works = True
         else:
             bucket_data.sort(reverse=False, key=lambda i: i.last_modified)
             for i in range(0, self.number):
                 bucket_data.pop()
             for file in bucket_data:
-                logger.info('Deleting file %s' % (file.name))
-                bucket.delete_key(key_name=file.name)
-                logger.info('Key %s deleted.' % (file.name))
-
+                try:
+                    logger.info('Deleting file %s' % file.name)
+                    bucket.delete_key(key_name=file.name)
+                    logger.info('Key %s deleted.' % file.name)
+                    works = True
+                except BaseException:
+                    logger.error('Error deleting key %s' % file.name)
+                    works = False
+        end = time.time() - start
+        prom_metrics = {
+            "task": self.__class__.__name__,
+            "spent_time": end,
+            "works": works
+        }
+        dumpy.base.PROMETHEUS_MONIT_STATUS[self.db].append(prom_metrics)
         return file
