@@ -1,5 +1,5 @@
 CONTAINER_NAME=dumpy
-REGISTRY=registry.service.kubernetes.intranet/l-pd-kubernetes/$(CONTAINER_NAME)
+REGISTRY=$(CONTAINER_NAME)
 .PHONY: all build push
 
 all: build push clean
