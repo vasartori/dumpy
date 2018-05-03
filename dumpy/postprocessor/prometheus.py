@@ -44,10 +44,9 @@ class Monitoring(dumpy.base.PostProcessBase):
                              registry=r)
 
         for i in dumpy.base.PROMETHEUS_MONIT_STATUS[self.db]:
-            status.append(i['works'])
             db_backup_time_spent.labels(self.db, i['task']).set(i['spent_time'])
 
-        if False in status:
+        if False in dumpy.base.FAIL_STATE:
             db_backup_ok.labels(self.db).set(0)
         else:
             db_backup_ok.labels(self.db).set(1)

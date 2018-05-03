@@ -47,6 +47,12 @@ class S3Copy(dumpy.base.PostProcessBase):
 
         self.parse_config()
 
+        if False in dumpy.base.FAIL_STATE:
+            logger.error("%s - %s - Found a previous error. Stopping here." %
+                         (self.db,
+                          self.__class__.__name__))
+            return file
+
         start = time.time()
         conn = S3Connection(self.access_key, self.secret_key)
         bucket = conn.create_bucket(self.bucket)
@@ -81,7 +87,7 @@ class S3Copy(dumpy.base.PostProcessBase):
         prom_metrics = {
             "task": self.__class__.__name__,
             "spent_time": end,
-            "works": works
         }
+        dumpy.base.FAIL_STATE.append(works)
         dumpy.base.PROMETHEUS_MONIT_STATUS[self.db].append(prom_metrics)
         return file

@@ -44,6 +44,12 @@ class S3Rotating(dumpy.base.PostProcessBase):
             raise Exception(
                 "You must have boto installed before using S3 support.")
 
+        if False in dumpy.base.FAIL_STATE:
+            logger.error("%s - %s - Found a previous error. Stopping here." %
+                         (self.db,
+                          self.__class__.__name__))
+            return file
+
         self.parse_config()
         start = time.time()
         conn = S3Connection(self.access_key, self.secret_key)
@@ -71,7 +77,7 @@ class S3Rotating(dumpy.base.PostProcessBase):
         prom_metrics = {
             "task": self.__class__.__name__,
             "spent_time": end,
-            "works": works
         }
+        dumpy.base.FAIL_STATE.append(works)
         dumpy.base.PROMETHEUS_MONIT_STATUS[self.db].append(prom_metrics)
         return file

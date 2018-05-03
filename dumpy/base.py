@@ -4,7 +4,7 @@ import os
 from dumpy.importlib import import_module
 
 PROMETHEUS_MONIT_STATUS = dict()
-
+FAIL_STATE = list()
 
 class ProcessorException(Exception):
     pass

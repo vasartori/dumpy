@@ -21,6 +21,12 @@ class Bzip(dumpy.base.PostProcessBase):
 
         self.parse_config()
 
+        if False in dumpy.base.FAIL_STATE:
+            logger.error("%s - %s - Found a previous error. Stopping here." %
+                         (self.db,
+                          self.__class__.__name__))
+            return file
+
         cmd = "%(path)s -f '%(file)s'" % ({'path': self.path, 'file': file.name})
         logger.info('%s - %s - Command: %s' % (self.db, self.__class__.__name__, cmd))
         start = time.time()
@@ -34,15 +40,16 @@ class Bzip(dumpy.base.PostProcessBase):
             prom_metrics = {
                 "task": self.__class__.__name__,
                 "spent_time": end,
-                "works": True
             }
+            works = True
         else:
             prom_metrics = {
                 "task": self.__class__.__name__,
                 "spent_time": end,
-                "works": False
             }
+            works = False
             logger.warning("The return value of command: %s is not zero. The "
                            "returned value is: %s" % (cmd, str(retval)))
+        dumpy.base.FAIL_STATE.append(works)
         dumpy.base.PROMETHEUS_MONIT_STATUS[self.db].append(prom_metrics)
         return new_file

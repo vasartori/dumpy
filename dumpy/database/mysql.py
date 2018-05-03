@@ -60,15 +60,16 @@ class MysqlBackup(dumpy.base.BackupBase):
             prom_metrics = {
                 "task": self.__class__.__name__,
                 "spent_time": end,
-                "works": True
             }
+            dumpy.base.FAIL_STATE.append(True)
         else:
             prom_metrics = {
                 "task": self.__class__.__name__,
                 "spent_time": end,
                 "works": False
             }
-            logger.warning("The return value of command: %s is not zero. The "
+            dumpy.base.FAIL_STATE.append(False)
+            logger.error("The return value of command: %s is not zero. The "
                            "returned value is: %s" % (cmd, str(retval)))
         dumpy.base.PROMETHEUS_MONIT_STATUS[self.db].append(prom_metrics)
         return tmp_file
