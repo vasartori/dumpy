@@ -50,18 +50,16 @@ The following is an idea of what the configuration file, located at
 	[Bzip options]
 	path = /usr/bin/bzip2
 
-	[S3Copy options]
+	[S3 options]
 	access_key = access_key
 	secret_key = secret_key
 	bucket = bucket
 	prefix = path/to/directory
+
+	[S3Copy options]
 	db_name_dir = True or False
 
 	[S3Rotating options]
-	access_key = access_key
-	secret_key = secret_key
-	bucket = bucket
-	prefix = path/to/directory
 	number = 5
 
 	[FileSystemCopy options]
@@ -119,7 +117,7 @@ TODO LIST
 =========
 
 - [x] Docker container
-- [ ] Unify S3 configs
+- [x] Unify S3 configs
 - [ ] Update boto to version 3
 - [ ] Update to python3
 - [ ] Path to config file in options. Fallback to `~/.dumpy.cfg`

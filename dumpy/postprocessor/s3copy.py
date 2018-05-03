@@ -14,28 +14,36 @@ import dumpy
 
 logger = logging.getLogger("dumper")
 
+
 class S3Copy(dumpy.base.PostProcessBase):
     """
     A post processor that copies the given file to S3.
     """
+
     def __init__(self, db):
         self.db = db
 
     def parse_config(self):
         super(S3Copy, self).parse_config()
-        self.access_key = self._get_option_value(self.config, 'S3Copy options', 'access_key')
-        self.secret_key = self._get_option_value(self.config, 'S3Copy options', 'secret_key')
-        self.bucket = self._get_option_value(self.config, 'S3Copy options', 'bucket')
-        self.prefix = self._get_option_value(self.config, 'S3Copy options', 'prefix')
-        self.db_name_dir = bool(self._get_option_value(self.config, 'S3Copy '
-                                                                     'options', 'db_name_dir'))
+        self.access_key = self._get_option_value(self.config, 'S3 options',
+                                                 'access_key')
+        self.secret_key = self._get_option_value(self.config, 'S3 options',
+                                                 'secret_key')
+        self.bucket = self._get_option_value(self.config, 'S3 options',
+                                             'bucket')
+        self.prefix = self._get_option_value(self.config, 'S3 options',
+                                             'prefix')
+        self.db_name_dir = self._get_option_value(self.config, 'S3Copy options',
+                                                  'db_name_dir',
+                                                  'boolean')
         # Make sure prefix ends with a single forward slash
         if not self.prefix.endswith('/'):
             self.prefix += '/'
 
     def process(self, file):
         if boto is None:
-            raise Exception("You must have boto installed before using S3 support.")
+            raise Exception(
+                "You must have boto installed before using S3 support.")
 
         self.parse_config()
 
@@ -43,7 +51,7 @@ class S3Copy(dumpy.base.PostProcessBase):
         conn = S3Connection(self.access_key, self.secret_key)
         bucket = conn.create_bucket(self.bucket)
         k = Key(bucket)
-        if self.prefix and self.db_name_dir == False:
+        if self.prefix and self.db_name_dir is False:
             keyname = '%s%s' % (
                 self.prefix,
                 os.path.basename(file.name)
@@ -53,7 +61,7 @@ class S3Copy(dumpy.base.PostProcessBase):
                 self.prefix,
                 '/'.join([self.db, os.path.basename(file.name)])
             )
-        elif self.prefix == False and self.db_name_dir:
+        elif self.prefix is False and self.db_name_dir:
             keyname = '/'.join([self.db, os.path.basename(file.name)])
         else:
             keyname = os.path.basename(file.name)
@@ -63,10 +71,11 @@ class S3Copy(dumpy.base.PostProcessBase):
             end = time.time() - start
             works = True
             logger.info('%s - %s - Copying to S3 with key name: %s' % (
-            self.db, self.__class__.__name__, keyname))
+                self.db, self.__class__.__name__, keyname))
         except BaseException:
             logger.error('%s - %s - Copying to S3 with key name: %s' % (
-            self.db, self.__class__.__name__, keyname))
+                self.db, self.__class__.__name__, keyname))
+            end = time.time() - start
             works = False
 
         prom_metrics = {
@@ -76,4 +85,3 @@ class S3Copy(dumpy.base.PostProcessBase):
         }
         dumpy.base.PROMETHEUS_MONIT_STATUS[self.db].append(prom_metrics)
         return file
-

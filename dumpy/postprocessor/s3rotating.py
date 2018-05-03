@@ -25,15 +25,13 @@ class S3Rotating(dumpy.base.PostProcessBase):
 
     def parse_config(self):
         super(S3Rotating, self).parse_config()
-        self.access_key = self._get_option_value(self.config, 'S3Rotating '
-                                                              'options',
+        self.access_key = self._get_option_value(self.config, 'S3 options',
                                                  'access_key')
-        self.secret_key = self._get_option_value(self.config, 'S3Rotating '
-                                                              'options',
+        self.secret_key = self._get_option_value(self.config, 'S3 options',
                                                  'secret_key')
-        self.bucket = self._get_option_value(self.config, 'S3Rotating options',
+        self.bucket = self._get_option_value(self.config, 'S3 options',
                                              'bucket')
-        self.prefix = self._get_option_value(self.config, 'S3Rotating options',
+        self.prefix = self._get_option_value(self.config, 'S3 options',
                                              'prefix')
         self.number = int(self._get_option_value(self.config, 'S3Rotating '
                                                               'options',
@@ -54,7 +52,7 @@ class S3Rotating(dumpy.base.PostProcessBase):
 
         if len(bucket_data) <= self.number:
             logger.info("The amount of backups for db %s was not reached to "
-                        "be deleted." % (self.db))
+                        "be deleted." % self.db)
             works = True
         else:
             bucket_data.sort(reverse=False, key=lambda i: i.last_modified)
