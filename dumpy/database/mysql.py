@@ -45,6 +45,12 @@ class MysqlBackup(dumpy.base.BackupBase):
         self.parse_config()
         tmp_file = tempfile.NamedTemporaryFile()
 
+        if dumpy.base.FILE_EXISTS_ON_S3:
+            logger.info("%s - %s - Found a backup on S3. Skiping dump" %(
+                self.db,
+                self.__class__.__name__))
+            return tmp_file
+
         cmd = '%(binary)s %(flags)s %(database)s > %(file)s' % ({
             'binary': self.binary,
             'flags': self.get_flags(),
@@ -66,7 +72,6 @@ class MysqlBackup(dumpy.base.BackupBase):
             prom_metrics = {
                 "task": self.__class__.__name__,
                 "spent_time": end,
-                "works": False
             }
             dumpy.base.FAIL_STATE.append(False)
             logger.error("The return value of command: %s is not zero. The "

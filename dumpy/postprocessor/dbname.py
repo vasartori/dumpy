@@ -22,6 +22,19 @@ class PrependDatabaseName(dumpy.base.PostProcessBase):
 
         self.parse_config()
 
+        if dumpy.base.FILE_EXISTS_ON_S3:
+            logger.info("%s - %s - Found a backup on S3. Skiping Prepend "
+                        "Database Name" %(
+                self.db,
+                self.__class__.__name__))
+            return file
+
+        if False in dumpy.base.FAIL_STATE:
+            logger.error("%s - %s - Found a previous error. Stopping here." %
+                         (self.db,
+                          self.__class__.__name__))
+            return file
+
         dir = os.path.dirname(file.name)
         base, ext = os.path.splitext(os.path.basename(file.name))
 

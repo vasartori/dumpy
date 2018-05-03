@@ -26,7 +26,7 @@ class Monitoring(dumpy.base.PostProcessBase):
 
     def process(self, file):
         self.parse_config()
-        status = list()
+
         prom_labels = ["database", "task"]
         r = CollectorRegistry()
         db_backup_ok = Gauge("backup_ok", "Full Backup of mysql or pgsql "

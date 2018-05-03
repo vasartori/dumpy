@@ -5,6 +5,7 @@ from dumpy.importlib import import_module
 
 PROMETHEUS_MONIT_STATUS = dict()
 FAIL_STATE = list()
+FILE_EXISTS_ON_S3 = bool()
 
 class ProcessorException(Exception):
     pass
@@ -144,6 +145,7 @@ class PostProcess(PostProcessBase):
             'RotateFiles': 'dumpy.postprocessor.rotating.RotateFiles',
             'S3Copy': 'dumpy.postprocessor.s3copy.S3Copy',
             'S3Rotating': 'dumpy.postprocessor.s3rotating.S3Rotating',
+            'S3CheckExistingFile': 'dumpy.postprocessor.existingbackup.CheckS3ExistingBackup',
             'TimestampRename': 'dumpy.postprocessor.timestamp.TimestampRename',
             'Monitoring': 'dumpy.postprocessor.prometheus.Monitoring',
         }

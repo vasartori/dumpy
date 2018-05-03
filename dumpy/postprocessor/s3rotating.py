@@ -44,6 +44,12 @@ class S3Rotating(dumpy.base.PostProcessBase):
             raise Exception(
                 "You must have boto installed before using S3 support.")
 
+        if dumpy.base.FILE_EXISTS_ON_S3:
+            logger.info("%s - %s - Found a backup on S3. Skiping S3 Rotating" %(
+                self.db,
+                self.__class__.__name__))
+            return file
+
         if False in dumpy.base.FAIL_STATE:
             logger.error("%s - %s - Found a previous error. Stopping here." %
                          (self.db,
