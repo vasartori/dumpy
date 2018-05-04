@@ -73,9 +73,8 @@ The following is an idea of what the configuration file, located at
 	host = <prometheus push gateway host with port. Eg: localhost:9091>
 	job_name = <value for label job>
 
-    [S3CheckExistingFile]
-    pattern = <can be a time format or a string>
-
+	[S3CheckExistingFile]
+	pattern = <can be a time format or a string>
 
 Status
 ======
