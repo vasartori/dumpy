@@ -63,8 +63,11 @@ class S3Rotating(dumpy.base.PostProcessBase):
         bucket_data = bucket.get_all_keys()
 
         if len(bucket_data) <= self.number:
-            logger.info("The amount of backups for db %s was not reached to "
-                        "be deleted." % self.db)
+            logger.info("%s - %s - The amount of backups for db %s was not reached to "
+                        "be deleted." % (
+                self.db,
+                self.__class__.__name__,
+                self.db))
             works = True
         else:
             bucket_data.sort(reverse=False, key=lambda i: i.last_modified)
