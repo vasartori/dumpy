@@ -44,10 +44,18 @@ class CheckS3ExistingBackup(dumpy.base.PostProcessBase):
         self.parse_config()
         p = datetime.now().strftime(self.pattern)
 
-        conn = S3Connection(self.access_key, self.secret_key)
-        bucket = conn.get_bucket(self.bucket)
-        bucket_data = bucket.get_all_keys()
-        bucket_data.sort(reverse=False, key=lambda i: i.last_modified)
+        try:
+            conn = S3Connection(self.access_key, self.secret_key)
+            bucket = conn.get_bucket(self.bucket)
+            bucket_data = bucket.get_all_keys()
+            bucket_data.sort(reverse=False, key=lambda i: i.last_modified)
+        except BaseException as e:
+            logger.warning("%s - %s - Skiping Verification of Existence of "
+                           "previous backups. The error returned was: %s" % (
+                self.db,
+                self.__class__.__name__,
+                e))
+            return file
 
         for file in bucket_data:
             if p in file.name:
