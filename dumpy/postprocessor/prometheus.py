@@ -46,7 +46,9 @@ class Monitoring(dumpy.base.PostProcessBase):
         for i in dumpy.base.PROMETHEUS_MONIT_STATUS[self.db]:
             db_backup_time_spent.labels(self.db, i['task']).set(i['spent_time'])
 
-        if False in dumpy.base.FAIL_STATE:
+        if dumpy.base.FILE_EXISTS_ON_S3:
+            db_backup_ok.labels(self.db).set(1)
+        elif False in dumpy.base.FAIL_STATE:
             db_backup_ok.labels(self.db).set(0)
         else:
             db_backup_ok.labels(self.db).set(1)
